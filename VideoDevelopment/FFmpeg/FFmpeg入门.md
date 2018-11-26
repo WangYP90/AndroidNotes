@@ -135,4 +135,9 @@ HTTP 、 HTTPS 、 HLS ( M3U8 ） 、 RTMP , RTP ，甚至支持 TCP 、 UDP ，
 解码、协议相对来说比较全面，是一款功能强大的多媒体处理工具和开发套件。
 
 
+### FFmpeg API
+#### libavformat
+libavformat 是FFmpeg中处理音频、视频以及字幕封装和解封装的通用框架，内置了很多处理多媒体文件的 Muxer（封装器） 和 Demuxer（解封装器），它支持如AVInputFormat的输入容器和AVOutputFormat的输出容器，同时也支持基于网络的一些流媒体协议，如HTTP、RTSP、RTMP等。
+
+
 
