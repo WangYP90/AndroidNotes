@@ -320,8 +320,9 @@ SurfaceHolder: 顾名思义,是一个管理SurfaceHolder的容器.SUrfaceHolder�
 
 ```
 #### 开始 prepare 后的流程
-![image](D:\Android\Android Notes\VideoDevelopment\img)
+![image](https://github.com/WangYP90/AndroidNotes/blob/master/VideoDevelopment/img/MediaPlayer%E7%B1%BB%E4%B9%8B%E9%97%B4%E7%9A%84%E4%BE%9D%E8%B5%96%E5%9B%BE.png?raw=true)
 MediaPlayer部分的头文件在frameworks/base/include/media/目录中,这个目录和libmedia.so库源文件的目录frameworks/base/media/libmedia/相对应,主要的头文件有以下几个:  
+
 * IMediaPlayerClient.h
 * mediaplayer.h
 * IMediaPlayer.h
@@ -550,11 +551,94 @@ public:
 	virtual ~DeathNotifier();//析构
 	virtual void binderDied(cost wp<Ibinder>& who);
 }
-//对于MediaPlayerClient 和 MediaPlayerService 通过IPC进行通信,可以发现调用
+//对于MediaPlayerClient 和 MediaPlayerService 通过IPC进行通信,可以发现调用start函数后,底层返回了一个状态,以便我们知道已经处于Started状态还是没有处于Started状态,这时需要用process_media_player_call判定这个返回状态,然后通知java层中的回调事件.
 
-
+//下面是pause 函数:
+public void pause() throws IllegalStateException 
+{
+	stayAwake(false);//把唤醒状态置为false
+	_pause();//调用native代码
+}
+//在对应的JNI中找到android_media_mediaplayer_pause函数:
+static void android_media_MediaPlayer_pause(JNIEnv *env,jobject thiz)
+{
+	ALOGV("pause");
+	sp<MediaPlayer> mp = getMediaPlayer(env, thiz);
+    //省略判空抛异常
+    process_media_player_call(env,thiz, mp->pause(), NULL, NULL);
+}
+//查看pause函数,可以看到和start函数的流程类似,也是通过mp->pause返回对应的状态,然后通知上层来暂停的.
 
 ```
+#### C++中的MediaPlayer的C/S架构
+上面介绍的是java层调用JNI层中, 现在来分析JNI层向下到C++层,下面是Java层一个函数在C++层MediaPlayer中的过程(C++ 路径为 frameworks/av/media/libmedia/MediaPlayer.cpp)
+下面是setDataSource 函数来看看 C(Client) /S(Server) 模式的过程：
+```c++
+status_t MediaPlayer::setDataSource(int fd, int64_t offset, int64_t length)
+{
+    ALOGV("setDataSource(%d, %"PRId64", %"PRId64")", fd, offset, length);
+    status_t err = UNKNOWN_ERROR;
+    //首先赋值为一个未知错误的状态,就像boolean值事先声明为false一样
+    const sp<IMediaPlayerService>& service(getMediaPlayerService());
+    //通过IMediaPlayerService 获取Service 端的MediaPlayerService
+    if(service != 0){//如果service不为空
+    	sp<IMediaPlayer> player(service->create(this, mAudioSessionId));
+    	//调用service的create函数
+    	if(NO_ERROR != doSetRetransmitEndpoint(player) || (NO_ERROR != player->setDataSource(fd, offset, length))){
+    		player.clear();
+    	}
+    	err = attachNewPlayer(player);
+    }
+    return err;
+}
+//对应C++ 6.0 源码 MediaPlayerService.cpp 处于frameworks/media/libmediaplayerservice/MediaPlayerService.cpp中
+sp<IMediaPlayer> MediaPlayer::create(const sp<IMediaPlayerClient>& client, int audioSessionId)
+{
+    pid_t pid = IPCThreadState::self()->getCallingPid();
+    int32_t connId = android_atomic_inc(&mNextConnId);
+    sp<Client> c = new Client(this, pid, connId, client, audioSessionId, IPCThreadState::self()->getCallingUid());
+    ALOGV("Create new client(%d) from pid %d, uid %d,",connId, pid, IPCThreadState::self()->getCallingUid());
+    //表示效验调用方法的uid,用来进行身份验证
+    wp<Client> w = c;//把构造的client 强引用对象赋值成弱引用对象
+    {
+    	Mutex::Autolock lock(mLock);//互斥锁
+    	//mClients 声明为SortedVector < wp<Client> >
+    	mClients.add(w);
+    }
+    return c;
+}
+/* 在new Client中, 有一个IPCThreadState.在Android中ProcessState是客户端和服务器端公共的部分,作为Binder通信的基础.ProcessState是一个singleton类,每个进程只有一个对象,这个对象负责打开Binder驱动,简历线程池,让其进程里面的所有线程都能通过Binder通信.
+	与之相关的是IPCThreadState,每个线程都有一个IPCThreadState,实例登记在Linux线程的上下文附属数据中,主要负责Binder的读取、写入和请求处理.IPCThreadState在构造的时候获取进程的ProcessState并记录在自己的成员变量mProcess中,通过mProcess可以获得Binder的句柄.IPCThread通过 IPCThreadState::transact把data及handle等填充进binder_transaction_data,在两个进程间通信.
+	这里这个Client到底是什么?我们又得追踪一下,在frameworks/av/media/libmediaplayer-service/MediaPlayerService.h
+*/
+class CLient : public BnMediaPlayer
+{
+	//IMediaPlayer 接口
+	virtual void disconnect();
+	virtual status_t 	setVideoSurfaceTexture(const sp<IGraphicBufferProducer>& bufferProducer);
+	virtual status_t 	prepareAsync();
+	virtual status_t 	start();
+	virtual status_t	stop();
+	virtual status_t	pause();
+	virtual status_t	siPlaying(bool* state);
+	virtual status_t	setPlaybackSettings(const AudioPlaybackRate& rate);
+	virtual status_t	getPlaybackSettings(AudioPlaybackRate* rate/* nonnull */);
+	virtual status_t 	setSyncSettings(const AVSyncSettings& rate, float videoFpsHint);
+	virtual status_t 	getSyncSettings(AVSyncSettings* rate/* nonnull */, float* videoFps /* nonnull */);
+	virtual status_t	seekTo(int msec);
+	virtual status_t	getCurrentPosition(int* msec);
+	virtual status_t	getDuration(int* msec);
+	virtual status_t 	reset();
+	virtual status_t	setAudioStreamType(audio_stream_type_t type);
+	virtual status_t	setLooping(int loop);
+	virtual status_t	setVolume(float leftVolume, float rightVolume);
+	//省略部分代码
+}//Client
+
+```
+
+
+
 
 
 
