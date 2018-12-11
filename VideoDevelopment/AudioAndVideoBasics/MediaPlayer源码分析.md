@@ -634,6 +634,83 @@ class CLient : public BnMediaPlayer
 	virtual status_t	setVolume(float leftVolume, float rightVolume);
 	//省略部分代码
 }//Client
+/*
+	以上代码对应Java层的MediaPlayer相关方法,上面的MediaPlayer架构图,可以从整体上理解这个Client属于什么角色及位置,继承BnMediaPlayer,并包含IMediaPlayer相关接口。
+	总结上面代码：Client类继承关系为 Client->BnMediaPlayer->IMediaPlayer.分析上面的代码可以看出,create函数构造了一个Client对象,并将此Client对象添加到MediaPlayerService类的全局列表mClients中,这是一个SortedVector,紧接着执行player->setDataSource(url,headers),即Clients::setDataSource,因此在setDataSource中右如下语句:
+	sp<IMediaPlayer> player(service->create(this,mAudioSessionId));
+等价于 sp<IMediaPlayer> player(newClient(**));
+即player 最终是用Client对象类初始化的,可以直接认为player==Client.
+	这时候问题来了,在C++中,这个Client及MediaPlayer又是什么关系呢?
+	- Client是MediaPlayerService 内部的一个类,我们从上面的代码已知,因为MediaPlayerService运行在服务器端,故Client也运行在服务器端.
+	- Client在MediaPlayerService.h中,那接着看看MediaPlayerService中的实现,实现过程中调用过MediaPlayerService类的一些函数,同样回到setDataSource. 代码如下:
+*/
+status_t MediaPlayerService::Client::setDataSource(
+	const sp<IMediaHTTPService> &httpService,
+	const char *url,
+	const KeyedVector<String8, String8> *headers)
+{
+    ALOGV("setDataSource(%s)", url);
+    if(url == NULL)
+        return UNKNOWN_ERROR;
+    //这里匹配来自HTTP、HTTPS、RTSP相关url，这些流是需要经过网络传输的，检查其是否设置了响应的权限，如果没有，返回PERMISSION_DENIED
+    if((strncmp(url, "http://", 7) == 0) || (strncmp(url, "https://", 8)) == 0 || (strncmp(url, "rtsp://", 7)) == 0){
+        if(!checkPermission("android.permission.INTERNET")){
+            return PERMISSION_DENIED;
+        }
+    }
+    //判断是否通过contentprovider提供的数据
+    if(strncmp(url, "content://" 10) == 0){
+        String16 url16(url);
+        int fd = android::openContentProviderFile(url16);
+        if(fd < 0)
+        {
+            ALOGE("Couldn't open fd for %s", url);
+            return UNKNOWN_ERROR;
+        }   
+        setDataSource(fd, 0, 0x7fffffffffLL);
+        close(fd);
+        return mStatus;
+    } else {
+    	player_type playerType = MediaPlayerFactory::getPlayerType(this, url);
+        sp<MediaPlayerBase> p = setDataSource_pre(playerType);
+        if(p == NULL){
+            return NO_INIT;
+        }
+        setDataSource_post(p, p->setDataSource(httpService, url, headers));
+        return mStatus;
+    }
+}
+/* 接下来重新看MediaPlayer中头文件定义的函数声明,方便对比Client中的函数,以下代码在frameworks/av/include/media/mediaplayer.h中:
+*/
+class MediaPlayer : public BnMediaPlayerClient,
+                    public virtual IMediaDeathNotifier
+{
+public:
+    MediaPlayer();
+    ~MediaPlayer();
+            void            died();
+            void            disconnect();
+
+            status_t        setDataSource(
+                    const sp<IMediaHTTPService> &httpService,
+                    const char *url,
+                    const KeyedVector<String8, String8> *headers);
+
+            status_t        setDataSource(int fd, int64_t offset, int64_t length);
+            status_t        setDataSource(const sp<IDataSource> &source);
+            status_t        setVideoSurfaceTexture(
+                                    const sp<IGraphicBufferProducer>& bufferProducer);
+            status_t        setListener(const sp<MediaPlayerListener>& listener);
+            status_t        prepare();
+            status_t        prepareAsync();
+            status_t        start();
+            status_t        stop();
+            status_t        pause();
+            bool            isPlaying();
+           
+            //省略部分代码
+};
+//这里的函数和Client 中的函数是意义对应的,两者通过Client的代理类联系在一起
 
 ```
 
