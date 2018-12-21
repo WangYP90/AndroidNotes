@@ -41,34 +41,32 @@ C99 和C11 允许使用更长的标识符名（变量名），但是编译器只
 #### 数据类型和使用
 ##### 基本数据类型和使用
 * 平常基本使用就使用 int long short unsigned char float double 就完了, 所以只需要有哪些东西存在就行了,真的在使用比较大的数做运算处理的时候, 再去使用它们.  
-数据类型 | printf
----|---
-int | %d
-short | %d 或者 %hd
-long | %d
-float | %d 或者 %hd
-double | %d
-char | %d 或者 %hd
-16进制 | %x
-8进制 | %o
-字符串 | %s
-16进制long 类型 | %lx
-8进制打印long 类型 | %lo
-字符串 | %s
-指数基数法的浮点数 | %e (如果系统支持16进制格式的浮点数),可用a和A分别代替e和E
-short int | %d
-long int |	%ld (在32位环境中其实是一样的long int  和long)
-long long |	%lld
-long long int | %lld
-unsigned long | %lu
-int32_t(是int类型的别名，是精确宽度整数类型，int32_t表示的宽度正好为是32位的时候，但是计算机底层系统不支持。因此这是个可选项。如果系统不支持精确宽度整数类型怎么办？C99和C11提供了第2类别名集合：) | %" PRId32 "
-int_least8_t (至少是8位有符号的整数值的一个别名)| %" PRId32 "
-int_fast8_t (至少8位有符号值而言运算最快的整数类型别名)| %" PRId32 "
-intmax_t (C99定义了 intmax_t （最大的有符号整数） 类似的还有 unitmax_t 表示最大无符号整数类型。 这些类型可能比 long long 和 unsigned long 类型更大。) | %" PRId32 "
-int32_t | %" PRId32 "(上面的这些可移植类型，在printf 打印的时候 有些使用 %d，有些使用 %ld ，C标准针对这一情况提供了 RPId32 \ 64 字符串宏来显示可移植类型。  还有 PR (Id li lo lu ) 很多种 宏)
 
-
-
+数据类型 | printf  
+---|---  
+int | %d  
+short | %d 或者 %hd  
+long | %d  
+float | %d 或者 %hd  
+double | %d  
+char | %d 或者 %hd  
+16进制 | %x  
+8进制 | %o  
+字符串 | %s  
+16进制long 类型 | %lx  
+8进制打印long 类型 | %lo  
+字符串 | %s  
+指数基数法的浮点数 | %e (如果系统支持16进制格式的浮点数),可用a和A分别代替e和E  
+short int | %d  
+long int |	%ld (在32位环境中其实是一样的long int  和long)  
+long long |	%lld  
+long long int | %lld  
+unsigned long | %lu  
+int32_t(是int类型的别名，是精确宽度整数类型，int32_t表示的宽度正好为是32位的时候，但是计算机底层系统不支持。因此这是个可选项。如果系统不支持精确宽度整数类型怎么办？C99和C11提供了第2类别名集合：) | %" PRId32 "  
+int_least8_t (至少是8位有符号的整数值的一个别名)| %" PRId32 "  
+int_fast8_t (至少8位有符号值而言运算最快的整数类型别名)| %" PRId32 "  
+intmax_t (C99定义了 intmax_t （最大的有符号整数） 类似的还有 unitmax_t 表示最大无符号整数类型。 这些类型可能比 long long 和 unsigned long 类型更大。) | %" PRId32 "  
+int32_t | %" PRId32 "(上面的这些可移植类型，在printf 打印的时候 有些使用 %d，有些使用 %ld ，C标准针对这一情况提供了 RPId32 \ 64 字符串宏来显示可移植类型。  还有 PR (Id li lo lu ) 很多种 宏)  
 
 ```c++
 //stdudio.h  相当于java 的lang包,在C中studio.h 是C语言的一个标准库, .h代表只有函数的声明,没有函数的实现,因为C语言是系统底层的语言,所以他的这些函数,都在window,linux 有不同的实现,在编译器把.c 或者C++的.cpp文件编译完成后,执行的时候我们调用的这些声明函数就会去系统底层找自己的实现. 
