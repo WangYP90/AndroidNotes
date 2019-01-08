@@ -134,6 +134,10 @@ HTTP 、 HTTPS 、 HLS ( M3U8 ） 、 RTMP , RTP ，甚至支持 TCP 、 UDP ，
 与解码 的格式支持，以及流媒体传输协议的支持。 综合来说， FFmpeg 所支持的容器
 解码、协议相对来说比较全面，是一款功能强大的多媒体处理工具和开发套件。
 
+#### 视频生成GIF
+ffmpeg -ss 2 -t 10 -i xiao_donghua.mp4 -s 1280x720 -b:v 1500k test.gif  
+从 2s 开始 录制 10s  -b:v {输出视频码率} {输出路径} ,码率:每一帧画面的大小
+
 
 ### FFmpeg API
 #### libavformat
