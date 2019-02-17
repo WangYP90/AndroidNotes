@@ -20,10 +20,10 @@ unzip 名称.zip -d 路径
 - 解压 tar
 https://www.jianshu.com/p/3d9effeef575
 - 删除文件或者文件夹
-https://blog.csdn.net/djx5344/article/details/72876769
+https://blog.csdn.net/nicolas12/article/details/80890811
 4. VI命令大全
 
-
+添加权限: chmod u+x path
 
 
 保存命令
@@ -71,6 +71,39 @@ build_android.sh
 因为是在windows 下创建的,不是linux 可执行的
 - yum install -y dos2unix   安装dos2unix
 将windows .sh 转成linux 可执行文件
+
+
+
+- ./configure --enable-libsrt --enable-libx264 --enable-libx265 --enable-gpl
+- nasm/yasm not found or too old,  这是一个警告,  linux 下更新这个两个
+
+- https://blog.csdn.net/biezhihua/article/details/86186420
+* shell文件报错syntax error near unexpected token '$'\r''
+```
+https://www.jianshu.com/p/55597646fa84
+
+本来跑的好好得一个文件，在windows下修改了，然后移植到linux就报错了。
+找了一圈以下是解决方案：
+这种情况发生的原因是因为你所处理的文件换行符是dos格式的"\r\n"
+可以使用cat -v 文件名 来查看换行符是否是，如果是上述的，则行结尾会是^m
+需要转换成linux/unix格式的"\n"
+具体转换办法就是转换换行符
+可以用sed命令处理一下文件，命令如下：
+sed 's/\r//' 原文件 >转换后文件
+再运行就Ok拉
+
+
+
+
+.h.in what ?这个什么文件?
+Files ending with .in are typically template files used by a program called configure that generates a new file without the extension after substituting for variable expansions. I.e., if you're looking at a source tree that has files called, e.g. Makefile.in in the tree, then ./configure will generate a usable Makefile that can be used to "make" from source.
+
+
+java.awt.image.BufferedImage 
+awt包下的 android 都不支持,所以必须用android 自带的Bitmap 来处理图片
+```
+
+
 
 
 
