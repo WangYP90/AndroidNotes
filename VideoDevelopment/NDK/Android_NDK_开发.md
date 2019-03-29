@@ -12,4 +12,6 @@
 * 创建jni目录
 * add native support 添加本地支持,将android工程转为C/C++工程
 * Preferences->C/C++ General->Paths and Symbols ->右侧add 配置jni等信息.和VS开发JNI 是非常类似的,只不过依赖的是NDK-build里面的JNI.h, 和java-sdk的jni.h 是一样的.只是ndk做了封装.
-* 
+
+#### android.mk 相关的移植
+如果碰到有某个项目没有cmake 而是用的android.mk的方式,那就得在该文件夹下有jni目录,在jni目录下有android.mk文件(修改里面的配置为shell),然后运行ndk_build
