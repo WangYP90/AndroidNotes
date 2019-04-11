@@ -336,6 +336,20 @@ done
 ```
 
 
+#### shell脚本练习-编译ffmpeg
+```shell
+#早期版本编译ffmpeg,编写shell之前,执行 ./configure --disable-yasm,检查系统版本,生成config.mak配置文件(比如说检查gcc的版本,生成一个config.mak,老版本在ffmpeg根目录下,新版本在ffbuild文件夹里面), 禁用软件yasm
+#nasm和yasm fasm 
+
+#编译过程中, gcc会生成 .o 临时文件,最后再链接生成动态库
+
+#--enable-cross-compile gcc支持交叉编译,但是得配置使用,在linux上进行编译最终都是使用的gcc进行编译的.  交叉编译(编译不同操作系统的动态库,编译不同CPU平台的动态库,比如在linux下编译armCPU架构的动态库)
+
+
+```
+
+
+
 
 
 
