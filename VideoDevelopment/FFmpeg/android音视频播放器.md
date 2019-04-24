@@ -8,3 +8,5 @@
 #### JNI和NDK 的区别
 JNI:只是java访问C的一些api
 NDK:必须使用jni,但是NDK内置了很多模块,比如说OpenGL OpenSL,NativeWindow的原生绘制.这都是android里面自带的.
+
+#### 
