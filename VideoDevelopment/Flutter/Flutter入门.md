@@ -423,3 +423,13 @@ class IconContainerDemo extends StatelessWidget{
 - 垂直的列表
 - 数据量非常大的列表
 - 矩阵式列表
+#### 表单组件
+表单是一个包含表单元素的区域,表单元素允许用户输入内容,比如:文本域、下拉列表、单选框、复选框等。常见的应用场景有：登录、注册、输入信息等。表单里有两个重要组件，一个是From组件用来做整个表单提交使用的，另一个是TextFormField组件用来做用户输入。
+![表单组件](D:\公司内部资料\新建文件夹\AndroidNotes\VideoDevelopment\img\flutter\表单组件属性.png)  
+上面我们可以看到 key ：组件在整个Widget树种的key值，而获取表单实例，只需要设置一个全局类型的key，通过这个key的属性，来获取表单对象，需要使用GlobalKey来获取。
+- `GlobalKey<FormState> loginKey = new GlobalKey<FormState>()`  
+```dart
+
+```
+### MeterialDesign风格
+![MeterialDesign风格](D:\公司内部资料\新建文件夹\AndroidNotes\VideoDevelopment\img\flutter\MeterialDesign风格组件属性.png) 
