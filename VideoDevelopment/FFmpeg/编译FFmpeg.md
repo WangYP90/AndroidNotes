@@ -10,6 +10,9 @@ https://www.cnblogs.com/moxiaoan/p/5683743.html
 Centos ftp启动方式变化:
 systemctl start vsftpd.service
 3. 上传NDK,FFmpeg
+cd 到相应的目录文件
+使用 wget 下载url 命令 下载NDK 到该目录
+
 NDK下载 https://www.androiddevtools.cn/ 
 FFmpeg http://ffmpeg.org/download.html#releases (我这里使用的4.1)  
 - linux文件和文件夹权限
