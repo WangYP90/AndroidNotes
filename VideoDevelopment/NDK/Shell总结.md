@@ -31,6 +31,12 @@ file 文件
 cat file
 cat -n file 显示行号
 
+查看进程
+ps -ef|grep java
+ps -ef|grep python
+查看日志
+tail -f file
+
 查看文件最后10行
 tail -n 10 file
 查看文件最开始的10行
